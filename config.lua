@@ -2,27 +2,22 @@ Config = {}
 
 Config.Debug = false
 
-
 --bountyhunter
 Config.Price = math.random(50, 150)
-
-
-
+Config.TimeProgress = 5 -- in seconds
 Config.BlipBounty = {
     blipName = 'strange area', -- Config.Blip.blipName
     blipScale = 0.2 -- Config.Blip.blipScale
 }
 
-Config.BountyLocation = {
-    
+Config.BountyUfoLocation = {
 	["UFO camp"] = {
         description = "Hideout ",
         coords = {
             vec3(7.35, 931.29, 209.19),
             vec3(17.23, 924.59, 208.22),
 			vec3(6.03, 915.32, 209.85),
-			vec3(39.26, 936.69, 208.11),
-            
+			vec3(39.26, 936.69, 208.11),  
         }
     }
 }
