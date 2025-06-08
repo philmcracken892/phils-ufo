@@ -9,9 +9,9 @@ local lastMissionTime = 0
 local cooldownDuration = 600  
 local registeredNPCs = {}
 
--- Time restriction function (will be called with hour parameter from client)
+
 local function IsWithinAllowedHours(hour)
-    -- Check if current hour is between 22:00 and 03:59 (22, 23, 0, 1, 2, 3)
+    
     return (hour >= 22) or (hour <= 3)
 end
 
@@ -23,7 +23,7 @@ local function GetPlayersInRange(coords, range)
         local targetPed = GetPlayerPed(playerId)
         if targetPed then
             local targetCoords = GetEntityCoords(targetPed)
-            -- RedM distance calculation between two points
+          
             local distance = #(vector3(coords.x, coords.y, coords.z) - vector3(targetCoords.x, targetCoords.y, targetCoords.z))
             
             if distance <= range then
@@ -47,7 +47,7 @@ RegisterServerEvent('rsg-ufo:server:checkAreaTrigger')
 AddEventHandler('rsg-ufo:server:checkAreaTrigger', function(locationName, locationData, currentHour)
     local currentTime = os.time()
     
-    -- Check if current time is within allowed hours
+   
     if not IsWithinAllowedHours(currentHour) then
         TriggerClientEvent('rNotify:NotifyLeft', source, "Bounty Alert", 
             " missions are only available between 22:00 and 03:00 ", 
@@ -104,7 +104,7 @@ end
 local function StartBountyMission(currentHour)
     local currentTime = os.time()
     
-    -- Check if current time is within allowed hours
+    
     if not IsWithinAllowedHours(currentHour) then
         return
     end
@@ -127,17 +127,17 @@ local function StartBountyMission(currentHour)
     if #players > 0 then
         spawningPlayer = players[1]
 
-        -- Get the first coordinate from the location to use as center point
+       
         local centerCoord = location.data.coords[1]
         
-        -- Find all players within 100.0 units of the mission start point
+       
         Citizen.CreateThread(function()
-            Wait(1000) -- Small delay to ensure everything is loaded
+            Wait(1000) 
             local nearbyPlayers = GetPlayersInRange(centerCoord, 100.0)
             
-            -- Reward each nearby player
+           
             for _, playerId in ipairs(nearbyPlayers) do
-                if tonumber(playerId) ~= tonumber(spawningPlayer) then -- Don't reward the mission starter twice
+                if tonumber(playerId) ~= tonumber(spawningPlayer) then 
                     local Player = RSGCore.Functions.GetPlayer(tonumber(playerId))
                     if Player then
                         Player.Functions.AddMoney('cash', 150, "bounty-nearby-reward")
@@ -149,7 +149,7 @@ local function StartBountyMission(currentHour)
             end
         end)
 
-        -- Start mission broadcasts
+       
         TriggerClientEvent('rsg-ufo:client:startMission', -1, location)
         TriggerClientEvent('rNotify:NotifyLeft', -1, "Bounty Alert", 
             "Wanted beings spotted at " .. location.name .. "\n" .. location.data.description, 
@@ -165,7 +165,7 @@ AddEventHandler('rsg-ufo:server:requestMission', function(currentHour)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
     
-    -- Check if current time is within allowed hours
+   
     if not IsWithinAllowedHours(currentHour) then
         local nextAvailableTime = ""
         if currentHour < 22 and currentHour > 3 then
@@ -180,7 +180,7 @@ AddEventHandler('rsg-ufo:server:requestMission', function(currentHour)
         return
     end
     
-    -- Check if enough time has passed since the last mission
+   
     local currentTime = os.time()
     if activeMission then
         TriggerClientEvent('rNotify:NotifyLeft', src, "Bounty Board", 
@@ -195,7 +195,7 @@ AddEventHandler('rsg-ufo:server:requestMission', function(currentHour)
         return
     end
 
-    -- If there is no active mission and cooldown is over, start a new one
+   
     StartBountyMission(currentHour)
     TriggerClientEvent('rNotify:NotifyLeft', src, "Bounty Board", 
         "You've accepted a new bounty mission", 
@@ -216,7 +216,7 @@ AddEventHandler('rsg-ufo:server:npcKilled', function(npcNetId)
         activeNPCs[npcNetId] = nil
         deadNPCs = deadNPCs + 1
         
-        -- Reward the killer
+       
         local reward = Config.Price or math.random(50, 150)
         Player.Functions.AddMoney('cash', reward, "bounty-reward")
         
@@ -224,14 +224,14 @@ AddEventHandler('rsg-ufo:server:npcKilled', function(npcNetId)
             "You received $" .. reward .. " for eliminating the target", 
             "generic_textures", "tick", 4000, "COLOR_GREEN")
         
-        -- Get nearby players and reward them for the assist
+       
         local centerCoord = missionLocation.data.coords[1]
         local nearbyPlayers = GetPlayersInRange(centerCoord, 100.0)
         
-        -- Reward nearby players for assist
-        local assistReward = 75  -- Half of the normal nearby reward per kill
+       
+        local assistReward = 75 
         for _, playerId in ipairs(nearbyPlayers) do
-            if tonumber(playerId) ~= tonumber(src) then -- Don't reward the killer twice
+            if tonumber(playerId) ~= tonumber(src) then 
                 local NearbyPlayer = RSGCore.Functions.GetPlayer(tonumber(playerId))
                 if NearbyPlayer then
                     NearbyPlayer.Functions.AddMoney('cash', assistReward, "bounty-assist-reward")
@@ -242,14 +242,14 @@ AddEventHandler('rsg-ufo:server:npcKilled', function(npcNetId)
             end
         end
         
-        -- Check if all NPCs have been killed
+       
         if deadNPCs >= totalNPCs then
-            -- Additional completion bonus for nearby players
+          
             for _, playerId in ipairs(nearbyPlayers) do
-                if tonumber(playerId) ~= tonumber(src) then -- Don't reward the killer twice
+                if tonumber(playerId) ~= tonumber(src) then 
                     local NearbyPlayer = RSGCore.Functions.GetPlayer(tonumber(playerId))
                     if NearbyPlayer then
-                        local completionBonus = 75  -- Additional bonus for mission completion
+                        local completionBonus = 75  
                         NearbyPlayer.Functions.AddMoney('cash', completionBonus, "bounty-completion-bonus")
                         TriggerClientEvent('rNotify:NotifyLeft', playerId, "Mission Complete", 
                             "You received an additional $" .. completionBonus .. " for helping complete the mission!", 
@@ -260,16 +260,16 @@ AddEventHandler('rsg-ufo:server:npcKilled', function(npcNetId)
 
             TriggerClientEvent('rsg-ufo:client:missionComplete', -1)
             activeMission = false
-            lastMissionTime = os.time() -- Update the lastMissionTime when the mission is complete
+            lastMissionTime = os.time() 
         end
     end
 end)
 
--- Server event to check if missions should end due to time
+
 RegisterServerEvent('rsg-ufo:server:checkTimeRestriction')
 AddEventHandler('rsg-ufo:server:checkTimeRestriction', function(currentHour)
     if activeMission and not IsWithinAllowedHours(currentHour) then
-        -- End the mission if it's outside allowed hours
+       
         TriggerClientEvent('rNotify:NotifyLeft', -1, "Mission Ended", 
             "Bounty mission has ended as it's now outside allowed hours (22:00-03:00 )", 
             "generic_textures", "cross", 6000, "COLOR_RED")
